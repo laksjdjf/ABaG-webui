@@ -17,12 +17,6 @@ class ABaGDDIMSampler(object):
         self.schedule = schedule
         self.device = device
         
-        ####Add attention map###################
-        self.attention_controller = AttentionController(model)
-        
-        
-        ########################################
-        
         
     def register_buffer(self, name, attr):
         if type(attr) == torch.Tensor:
@@ -193,6 +187,7 @@ class ABaGDDIMSampler(object):
                       unconditional_guidance_scale=1., unconditional_conditioning=None,
                       dynamic_threshold=None):
         b, *_, device = *x.shape, x.device
+        
 
         if unconditional_conditioning is None or unconditional_guidance_scale == 1.:
             model_output = self.model.apply_model(x, t, c)
@@ -218,12 +213,41 @@ class ABaGDDIMSampler(object):
                     c_in.append(torch.cat([unconditional_conditioning[i], c[i]]))
             else:
                 c_in = torch.cat([unconditional_conditioning, c])
-            ###test##
-            self.attention_controller.attention_pixels = x.shape[2] * x.shape[3] // (self.attention_controller.attention_division ** 2) 
+                
+            ####ABaG####################
+            ##self.attention_controllerはui.pyで無理やりセットしています。
+            step = self.attention_controller.steps - index - 1
+            _, text_embeddings = c_in['c_crossattn'][0].chunk(2) #適当
+            with torch.enable_grad():
+                iteration = 0
+                latents = x.clone().detach().requires_grad_(True)
+                while True:
+                    latents = latents.clone().detach().requires_grad_(True)
+                    iteration += 1
+                    noise_pred_text = self.model.model.diffusion_model(latents, t, text_embeddings)
+                    self.model.model.diffusion_model.zero_grad()
+                    attention_map_mean = self.attention_controller._get_avarage_attention()
+                    print(torch.autograd.grad(attention_map_mean.mean().requires_grad_(True),latents)[0])
+                    bbox_max_indices_list, out_of_bbox_max_indices_list = self.attention_controller._compute_max_attention_per_bbox_and_outofbbox(attention_map_mean)
+                    
+                    loss = self.attention_controller._compute_loss(
+                            bbox_max_indices_list, 
+                            out_of_bbox_max_indices_list,
+                            return_loss=False,
+                            lr=self.attention_controller.lr)
+                    
+                    if loss != 0:
+                        latents = self.attention_controller._update_latent(
+                            latents=latents,
+                            loss=loss,
+                            step_size=self.attention_controller.scale_factor * np.sqrt(self.attention_controller.scale_range[step]))
+                    self.attention_controller._reset()
+                    if step not in self.attention_controller.thresholds.keys() or self.attention_controller.max_iter < iteration or loss < 1. - self.attention_controller.thresholds[step]:
+                        break
+            x_in = torch.cat([latents] * 2).requires_grad_(False)
+            ############################
+        
             model_uncond, model_t = self.model.apply_model(x_in, t_in, c_in).chunk(2)
-            print(self.attention_controller.attention_maps[0].shape)
-            
-            #########
             model_output = model_uncond + unconditional_guidance_scale * (model_t - model_uncond)
 
         if self.model.parameterization == "v":
