@@ -70,7 +70,6 @@ class AttentionController:
         return (self.attention_maps.sum(0) / self.attention_maps.shape[0]).mean(0)
 
     def _compute_max_attention_per_bbox_and_outofbbox(self,attention_map_mean) -> List[torch.Tensor]:
-        print(attention_map_mean.shape)
 
         #webuiは勝手に77までパディングするので注意するトークンまでに限定
         attention_for_text = attention_map_mean[:, :, 1:self.max_indices+1]
