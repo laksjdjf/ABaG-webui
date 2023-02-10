@@ -244,11 +244,14 @@ class ABaGDDIMSampler(object):
                     self.attention_controller._reset()
                     if step not in self.attention_controller.thresholds.keys() or self.attention_controller.max_iter < iteration or loss < 1. - self.attention_controller.thresholds[step]:
                         break
-            x_in = torch.cat([latents] * 2).requires_grad_(False)
+
+            x = latents.clone().detach().requires_grad_(False)
+            x_in = torch.cat([x] * 2)
            
             with torch.no_grad():
                 model_uncond, model_t = self.model.apply_model(x_in, t_in, c_in).chunk(2)
             model_output = model_uncond + unconditional_guidance_scale * (model_t - model_uncond)
+
             ############################
         if self.model.parameterization == "v":
             e_t = self.model.predict_eps_from_z_and_v(x, t, model_output)
