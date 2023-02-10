@@ -55,7 +55,6 @@ class ABaGDDIMSampler(object):
                         1 - self.alphas_cumprod / self.alphas_cumprod_prev))
         self.register_buffer('ddim_sigmas_for_original_num_steps', sigmas_for_original_sampling_steps)
 
-    @torch.no_grad()
     def sample(self,
                S,
                batch_size,
@@ -123,7 +122,6 @@ class ABaGDDIMSampler(object):
                                                     )
         return samples, intermediates
 
-    @torch.no_grad()
     def ddim_sampling(self, cond, shape,
                       x_T=None, ddim_use_original_steps=False,
                       callback=None, timesteps=None, quantize_denoised=False,
@@ -181,7 +179,6 @@ class ABaGDDIMSampler(object):
 
         return img, intermediates
 
-    @torch.no_grad()
     def p_sample_ddim(self, x, c, t, index, repeat_noise=False, use_original_steps=False, quantize_denoised=False,
                       temperature=1., noise_dropout=0., score_corrector=None, corrector_kwargs=None,
                       unconditional_guidance_scale=1., unconditional_conditioning=None,
@@ -217,17 +214,20 @@ class ABaGDDIMSampler(object):
             ####ABaG####################
             ##self.attention_controllerはui.pyで無理やりセットしています。
             step = self.attention_controller.steps - index - 1
-            _, text_embeddings = c_in['c_crossattn'][0].chunk(2) #適当
             with torch.enable_grad():
+                _, text_embeddings = c_in['c_crossattn'][0].chunk(2) #適当
                 iteration = 0
-                latents = x.clone().detach().requires_grad_(True)
+                latents = x
+                text_embeddings.requires_grad_(True)
+                self.attention_controller.unet.requires_grad_(True)
+                self.attention_controller._reset()
                 while True:
                     latents = latents.clone().detach().requires_grad_(True)
                     iteration += 1
-                    noise_pred_text = self.model.model.diffusion_model(latents, t, text_embeddings)
-                    self.model.model.diffusion_model.zero_grad()
+                    noise_pred_text = self.attention_controller.unet(latents, t, text_embeddings)
+
+                    self.attention_controller.unet.zero_grad()
                     attention_map_mean = self.attention_controller._get_avarage_attention()
-                    print(torch.autograd.grad(attention_map_mean.mean().requires_grad_(True),latents)[0])
                     bbox_max_indices_list, out_of_bbox_max_indices_list = self.attention_controller._compute_max_attention_per_bbox_and_outofbbox(attention_map_mean)
                     
                     loss = self.attention_controller._compute_loss(
@@ -245,11 +245,11 @@ class ABaGDDIMSampler(object):
                     if step not in self.attention_controller.thresholds.keys() or self.attention_controller.max_iter < iteration or loss < 1. - self.attention_controller.thresholds[step]:
                         break
             x_in = torch.cat([latents] * 2).requires_grad_(False)
-            ############################
-        
-            model_uncond, model_t = self.model.apply_model(x_in, t_in, c_in).chunk(2)
+           
+            with torch.no_grad():
+                model_uncond, model_t = self.model.apply_model(x_in, t_in, c_in).chunk(2)
             model_output = model_uncond + unconditional_guidance_scale * (model_t - model_uncond)
-
+            ############################
         if self.model.parameterization == "v":
             e_t = self.model.predict_eps_from_z_and_v(x, t, model_output)
         else:
@@ -289,7 +289,7 @@ class ABaGDDIMSampler(object):
         x_prev = a_prev.sqrt() * pred_x0 + dir_xt + noise
         return x_prev, pred_x0
 
-    @torch.no_grad()
+
     def encode(self, x0, c, t_enc, use_original_steps=False, return_intermediates=None,
                unconditional_guidance_scale=1.0, unconditional_conditioning=None, callback=None):
         num_reference_steps = self.ddpm_num_timesteps if use_original_steps else self.ddim_timesteps.shape[0]
@@ -336,7 +336,7 @@ class ABaGDDIMSampler(object):
             out.update({'intermediates': intermediates})
         return x_next, out
 
-    @torch.no_grad()
+
     def stochastic_encode(self, x0, t, use_original_steps=False, noise=None):
         # fast, but does not allow for exact reconstruction
         # t serves as an index to gather the correct alphas
@@ -352,7 +352,7 @@ class ABaGDDIMSampler(object):
         return (extract_into_tensor(sqrt_alphas_cumprod, t, x0.shape) * x0 +
                 extract_into_tensor(sqrt_one_minus_alphas_cumprod, t, x0.shape) * noise)
 
-    @torch.no_grad()
+
     def decode(self, x_latent, cond, t_start, unconditional_guidance_scale=1.0, unconditional_conditioning=None,
                use_original_steps=False, callback=None):
 
