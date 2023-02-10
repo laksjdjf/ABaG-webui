@@ -8,7 +8,7 @@
 
 --no-half --precision fullで起動してください。fp16でもうまくいくこともあるのですが、loss=nanになることもあります。
 
-samplerは **DDIM** にしてください、それ以外のsamplerでは適応されません。UIの通り、Enableにチェックを入れ、bboxをbirdman氏のコードと同様の記法で入力します。そしてlrを設定してください。lrといっても学習してるわけではなく、この手法の効き目をどれくらい強くするかという設定です。set size of attention map toは変更しない方がいいです。
+samplerは **DDIM** にしてください、それ以外のsamplerでは適応されません。UIの通り、Enableにチェックを入れ、bboxをbirdman氏のコードと同様の記法で入力します。そしてlrを設定してください。lrといっても学習してるわけではなく、この手法の効き目をどれくらい強くするかという設定です。set size of attention map toは変更しない方がいいです。thresholdsは特定のステップでのlossの閾値（1-nが閾値）になります。
 
 sampling stepは50を想定しているっぽいような実装っぽいのでそうしたほうがいいっぽいです。
 
