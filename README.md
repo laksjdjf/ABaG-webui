@@ -6,6 +6,8 @@
 
 そしたら **configファイル(stable-diffusion-webui/configs/v1-inference.yaml)をリポジトリにあるものに差し替えてください(もしくは use_checkpoint: Falseにする) 。** gradient checkpointingを無効化しただけなので通常の画像生成に影響しない・・と思います。
 
+--no-half --precision fullで起動してください。fp16でもうまくいくこともあるのですが、loss=nanになることもあります。
+
 samplerは **DDIM** にしてください、それ以外のsamplerでは適応されません。UIの通り、Enableにチェックを入れ、bboxをbirdman氏のコードと同様の記法で入力します。そしてlrを設定してください。lrといっても学習してるわけではなく、この手法の効き目をどれくらい強くするかという設定です。set size of attention map toは変更しない方がいいです。
 
 sampling stepは50を想定しているっぽいような実装っぽいのでそうしたほうがいいっぽいです。
