@@ -4,6 +4,8 @@
 # 使い方
 インストールは他の拡張と同じです。インストールしたらscriptsに"ABaG for webui"という項目がでてきます。
 
-そしたらconfigファイル(config/v1-inference.yaml)を差し替えてください。
+そしたらconfigファイル(stable-diffusion-webui/configs/v1-inference.yaml)をリポジトリにあるものに差し替えてください。
+
+（gradient checkpointingを無効化しただけなので通常の画像生成に影響しない・・と思います。）
 
 samplerはDDIMにしてください、それ以外のsamplerでは適応されません。UIの通り、Enableにチェックを入れ、bboxをbirdman氏のコードと同様の記法で入力します。学習率を数字で入力してください。set size of attention map toは変更しない方がいいです。
