@@ -37,12 +37,10 @@ class Script(scripts.Script):
             attention_division = gr.Dropdown([2,4,8], label=f"set size of attention map to (h/n,w/n)", value=4)
         with gr.Row():
             bboxes = gr.Textbox(lines = 5, label="bboxes")
-
         with gr.Row():    
-            lr = gr.Slider(0, 2.0, value=0.6,step=0.1,label='learning(?) rate (multiplier of grad)')
+            lr = gr.Textbox(label='lr')
         return [enable_abag, attention_division, bboxes, lr]
-    
-    
+
     def run(self, p: StableDiffusionProcessing, enable_abag, attention_division, bboxes, lr):
         if enable_abag:
             attention_controller = AttentionController(
@@ -51,7 +49,7 @@ class Script(scripts.Script):
                 bboxes = bboxes,
                 attention_height = p.height // attention_division // 8,
                 attention_width = p.width // attention_division // 8,
-                lr = lr,
+                lr = float(lr),
             )
             setattr(ABaGDDIMSampler,"attention_controller",attention_controller)
             #DDIMSamplerを改造する
