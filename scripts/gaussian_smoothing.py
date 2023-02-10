@@ -1,3 +1,5 @@
+#same as https://github.com/AttendAndExcite/Attend-and-Excite/blob/main/utils/gaussian_smoothing.py
+
 import math
 import numbers
 import torch
