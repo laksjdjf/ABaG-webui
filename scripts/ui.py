@@ -39,9 +39,11 @@ class Script(scripts.Script):
             bboxes = gr.Textbox(lines = 5, label="bboxes")
         with gr.Row():    
             lr = gr.Slider(0, 3, value=0.6,step=0.05,label='learning rate(?), multiplier of loss')
-        return [enable_abag, attention_division, bboxes, lr]
+        with gr.Row():
+            thresholds  = gr.Textbox(value = "0:0.05 10:0.5 20:0.8", label="thresholds")
+        return [enable_abag, attention_division, bboxes, lr, thresholds]
 
-    def run(self, p: StableDiffusionProcessing, enable_abag, attention_division, bboxes, lr):
+    def run(self, p: StableDiffusionProcessing, enable_abag, attention_division, bboxes, lr, thresholds):
         if enable_abag:
             attention_controller = AttentionController(
                 unet = p.sd_model.model.diffusion_model, 
@@ -50,6 +52,7 @@ class Script(scripts.Script):
                 attention_height = p.height // attention_division // 8,
                 attention_width = p.width // attention_division // 8,
                 lr = float(lr),
+                thresholds = thresholds,
             )
             setattr(ABaGDDIMSampler,"attention_controller",attention_controller)
             #DDIMSamplerを改造する
