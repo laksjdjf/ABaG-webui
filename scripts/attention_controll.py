@@ -29,12 +29,11 @@ class AttentionController:
         self.attention_height = attention_height
         self.attention_width = attention_width
         self.attention_pixels = attention_height * attention_width
-
         self.lr = lr #学習してないだろ
         self.bboxes = [[int(s) for s in box.split(" ")] for box in bboxes.split("\n")]
         self.indices_to_alter = [box[0] for box in  self.bboxes]
         self.max_indices = max(self.indices_to_alter)
-        print(self.bboxes)
+        print("bboxes:", self.bboxes)
         ##よく分からないものたち gaussian_smoothing関連だと思うけど
         self.sigma = 0.5
         self.kernel_size = 3
@@ -75,7 +74,6 @@ class AttentionController:
 
         #webuiは勝手に77までパディングするので注意するトークンまでに限定
         attention_for_text = attention_map_mean[:, :, 1:self.max_indices+1]
-        print(attention_for_text.shape)
         attention_for_text = attention_for_text * 100
         attention_for_text = torch.nn.functional.softmax(attention_for_text, dim=-1)
 
@@ -127,7 +125,7 @@ class AttentionController:
 
     def _update_latent(self,latents: torch.Tensor, loss: torch.Tensor, step_size: float) -> torch.Tensor:
         grad_cond = torch.autograd.grad(loss.requires_grad_(True), latents, retain_graph=True)[0]
-        print(loss, grad_cond.mean(),step_size)
+        print("loss:",loss.item())
         latents = latents - step_size * grad_cond
         return latents
 
