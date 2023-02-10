@@ -17,7 +17,7 @@ from einops import rearrange, repeat
 import numpy as np
 
 class AttentionController:
-    def __init__(self, unet, steps:int, bboxes:list, attention_height:int = 16, attention_width:int = 16,lr:float = 0.6):
+    def __init__(self, unet, steps:int, bboxes:list, attention_height:int = 16, attention_width:int = 16,lr:float = 0.6,thresholds:str="0:0.05 10:0.5 20:0.8"):
         '''
         unet:unet
         '''
@@ -40,7 +40,7 @@ class AttentionController:
         self.smooth_attentions = False
         
         self.scale_factor = 20
-        self.thresholds = {0: 0.05, 10: 0.5, 20: 0.8}
+        self.thresholds = {int(threshold.split(":")[0]):float(threshold.split(":")[1]) for threshold in thresholds.split(" ")}
         self.max_iter = 100
         
     #CrossAttention(attn2)を全て探す
