@@ -74,7 +74,7 @@ class AttentionController:
         print(attention_map_mean.shape)
 
         #webuiは勝手に77までパディングするので注意するトークンまでに限定
-        attention_for_text = attention_map_mean[:, :, 1:self.max_indices]
+        attention_for_text = attention_map_mean[:, :, 1:self.max_indices+1]
         print(attention_for_text.shape)
         attention_for_text = attention_for_text * 100
         attention_for_text = torch.nn.functional.softmax(attention_for_text, dim=-1)
