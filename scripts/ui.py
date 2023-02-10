@@ -38,7 +38,7 @@ class Script(scripts.Script):
         with gr.Row():
             bboxes = gr.Textbox(lines = 5, label="bboxes")
         with gr.Row():    
-            lr = gr.Textbox(label='lr')
+            lr = gr.Slider(0, 3, value=0.6,step=0.05,label='learning rate(?), multiplier of loss')
         return [enable_abag, attention_division, bboxes, lr]
 
     def run(self, p: StableDiffusionProcessing, enable_abag, attention_division, bboxes, lr):
