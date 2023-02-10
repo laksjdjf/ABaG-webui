@@ -31,6 +31,6 @@ https://github.com/birdManIkioiShota/ABaG ：本家ABaG
 
 https://github.com/AttendAndExcite/Attend-and-Excite ：本家の本家
 
-https://github.com/Stability-AI/stablediffusion　：本家の本家の本家の・・・
+https://github.com/Stability-AI/stablediffusion ：本家の本家の本家の・・・
 
 https://github.com/kousw/stable-diffusion-webui-daam ：Attention Mapの取り出し方を参考にしました。
