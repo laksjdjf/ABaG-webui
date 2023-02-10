@@ -41,7 +41,7 @@ class AttentionController:
         
         self.scale_factor = 20
         self.thresholds = {0: 0.05, 10: 0.5, 20: 0.8}
-        self.max_iter = 25
+        self.max_iter = 100
         
     #CrossAttention(attn2)を全て探す
     def _hook_blocks(self):
