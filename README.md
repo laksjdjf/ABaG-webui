@@ -4,13 +4,20 @@
 # 使い方
 インストールは他の拡張と同じです。インストールしたらscriptsに"ABaG for webui"という項目がでてきます。
 
-そしたら **configファイル(stable-diffusion-webui/configs/v1-inference.yaml)をリポジトリにあるものに差し替えてください(もしくは use_checkpoint: Falseにする) 。** gradient checkpointingを無効化しただけなので通常の画像生成に影響しない・・と思います。
++ yamlファイルで **use_checkpoint: False** にしてください。v1の場合はたぶんstable-diffusion-webui/configs/v1-inference.yamlです。gradient checkpointingを無効化しただけなので通常の画像生成に影響しない・・と思います。
 
---no-half --precision fullで起動してください。fp16でもうまくいくこともあるのですが、loss=nanになることもあります。
++ **--no-half --precision full** で起動してください。fp16でもうまくいくこともあるのですが、loss=nanになることもあります。
 
-samplerは **DDIM** にしてください、それ以外のsamplerでは適応されません。UIの通り、Enableにチェックを入れ、bboxをbirdman氏のコードと同様の記法で入力します。そしてlrを設定してください。lrといっても学習してるわけではなく、この手法の効き目をどれくらい強くするかという設定です。set size of attention map toは変更しない方がいいです。thresholdsは特定のステップでのlossの閾値（1-nが閾値）になります。
++ samplerは **DDIM** にしてください、それ以外のsamplerでは適応されません。
++ Enableにチェックを入れてください。
++ bboxをbirdman氏のコードと同様の記法で入力します。AttentionMap(AIが画像のどの部分に注意を向けているかを示す配列)のサイズは(H/32,W/32)になります。512×512では(16,16)です。bboxは"<トークンID> <上> <下> <左> <右>"と指定します。"2 0 16 0 7"と指定すると2番目のトークンが左側に生成されるようになります。
++ lrを設定してください。lrといっても学習してるわけではなく、この手法の効き目をどれくらい強くするかという設定です。
++ set size of attention map toは変更しない方がいいです。
++ thresholdsは特定のステップでのlossの閾値（1-nが閾値）になります。
 
-sampling stepは50を想定しているっぽいような実装っぽいのでそうしたほうがいいっぽいです。
++ sampling stepは50を想定しているっぽいような実装っぽいのでそうしたほうがいいっぽいです。
+
+使用例：元のリポジトリと同様左半分にねずみ、右下に赤い車が生成されるように指定してみた。
 
 ![4](https://github.com/laksjdjf/ABaG-webui/blob/main/image1.png?raw=true)
 
@@ -22,12 +29,14 @@ sampling stepは50を想定しているっぽいような実装っぽいので�
 + v1でもv2(yamlでuse_checkpoint:Falseにする)でも動くようですが、意図したとおりになっているか分かりません。
 + txt2imgしか想定していません。
 + モジュールを書き換えるため、別の機能に何か意図しないことが起こるかもしれません。
++ 外から潜在変数を無理やり置き換えるのできもい画像がでやすいです。
 
 # todo（いい方法教えて）
-+ bboxの指定がCUI的でこれじゃGUIの意味がない
-+ トークンIDがよくわからない
++ bboxの指定がCUI的でこれじゃGUIの意味がないので変える
++ トークンIDがわかるようにする
 + lossの表示でプログレスバーがしぬ
 + fp16対応
+
 # 既知の問題
 + しらん
 
