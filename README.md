@@ -40,7 +40,7 @@
 + fp16対応(なんかv2モデルだとlossがnanにならないっぽい)
 
 # 既知の問題
-+ Colabでgradioのshare機能を使うと生成完了時にgradioの画面が止まる（更新すると画面がリセットされルが動く）。この拡張のせいかは知らない。
++ Colabでgradioのshare機能を使うと生成完了時にgradioの画面が止まる（更新すると画面がリセットされるが動く）。この拡張のせいかは知らない。
 
 # 引用リポジトリ
 https://github.com/birdManIkioiShota/ABaG ：本家ABaG
